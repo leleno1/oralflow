@@ -1,0 +1,683 @@
+{
+  "schema_version": "0.1.0",
+  "workflow_id": "wf_minimal_contract",
+  "workflow_version": "0.1.0",
+  "revision": "rev_001",
+  "name": "M0 minimal contract workflow",
+  "goal": "Validate role binding, all edge kinds, bounded retry, error exit, and subworkflow return.",
+  "status": "draft",
+  "inputs": {
+    "type": "object",
+    "required": [
+      "request"
+    ],
+    "properties": {
+      "request": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "additionalProperties": false
+  },
+  "roles": [
+    {
+      "schema_version": "0.1.0",
+      "role_id": "mock_reviewer",
+      "role_type": "reviewer",
+      "skill_ref": "builtin://mock/reviewer",
+      "model_profile": "deterministic_mock",
+      "personality_profile": "skeptical_engineer",
+      "backend_profile": "mock",
+      "context_policy": {
+        "isolation": "separate",
+        "allowed_paths": [
+          "examples/"
+        ],
+        "artifact_types": [
+          "review_report"
+        ],
+        "history_mode": "declared_artifacts",
+        "return_mode": "summary_and_artifacts"
+      },
+      "permission_policy": {
+        "filesystem": {
+          "mode": "read",
+          "allowed_paths": [
+            "examples/"
+          ]
+        },
+        "tools": [],
+        "network": false,
+        "command_classes": [
+          "safe"
+        ],
+        "routing_control": false,
+        "code_write": false,
+        "business_artifact_write": true
+      },
+      "input_artifact_types": [],
+      "output_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": [
+          "verdict",
+          "summary"
+        ],
+        "properties": {
+          "verdict": {
+            "enum": [
+              "approved",
+              "retry"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "timeout_seconds": 60,
+      "max_attempts": 2,
+      "escalation_policy": {
+        "condition": "two consecutive invalid or retry results",
+        "target": "human"
+      },
+      "metadata": {
+        "description": "Deterministic M0 example role."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "schema_version": "0.1.0",
+      "id": "request_input",
+      "kind": "input",
+      "name": "Receive request",
+      "source": "user",
+      "inputs": {
+        "bindings": {
+          "request": {
+            "ref": "workflow-input://request"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "request"
+          ],
+          "properties": {
+            "request": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {
+          "request": "node-output://request_input/request"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "request"
+          ],
+          "properties": {
+            "request": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [
+          "NODE_INPUT_INVALID"
+        ],
+        "allowed_categories": [
+          "validation"
+        ],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 30,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "request is accepted or input validation fails"
+        ],
+        "escalation_condition": "required input cannot be supplied"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "mock_review",
+      "kind": "agent_task",
+      "name": "Review request with deterministic mock",
+      "role_id": "mock_reviewer",
+      "inputs": {
+        "bindings": {
+          "request": {
+            "ref": "node-output://request_input/request"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "request"
+          ],
+          "properties": {
+            "request": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "config": {
+        "values": {
+          "fixture": "approved_review"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "fixture"
+          ],
+          "properties": {
+            "fixture": {
+              "const": "approved_review"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {
+          "report": "artifact://review_report.json"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "verdict",
+            "summary"
+          ],
+          "properties": {
+            "verdict": {
+              "enum": [
+                "approved",
+                "retry"
+              ]
+            },
+            "summary": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [
+          "ROLE_OUTPUT_INVALID",
+          "MOCK_PROVIDER_FAILURE"
+        ],
+        "allowed_categories": [
+          "validation",
+          "provider"
+        ],
+        "retryable_codes": [
+          "ROLE_OUTPUT_INVALID",
+          "MOCK_PROVIDER_FAILURE"
+        ],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 60,
+        "max_attempts": 2,
+        "exit_conditions": [
+          "validated review report is produced",
+          "attempt budget is exhausted"
+        ],
+        "escalation_condition": "two consecutive failures have the same normalized code"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [
+          "safe"
+        ],
+        "network": false
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "review_gate",
+      "kind": "gate",
+      "name": "Check review verdict",
+      "condition": {
+        "language": "oralflow-expression-0.1",
+        "expression": "report.verdict"
+      },
+      "inputs": {
+        "bindings": {
+          "report": {
+            "ref": "artifact://review_report.json"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "report"
+          ],
+          "properties": {
+            "report": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "config": {
+        "values": {
+          "allowed_cases": [
+            "approved",
+            "retry"
+          ]
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "allowed_cases"
+          ]
+        }
+      },
+      "outputs": {
+        "destinations": {
+          "case": "node-output://review_gate/case"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "case"
+          ],
+          "properties": {
+            "case": {
+              "enum": [
+                "approved",
+                "retry"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [
+          "GATE_EXPRESSION_INVALID"
+        ],
+        "allowed_categories": [
+          "validation"
+        ],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 10,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "one declared case is selected",
+          "condition validation fails"
+        ],
+        "escalation_condition": "condition references an undeclared field"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "child_contract_check",
+      "kind": "subworkflow",
+      "name": "Validate child contract",
+      "workflow_ref": {
+        "workflow_id": "wf_minimal_child",
+        "version": "0.1.0"
+      },
+      "inputs": {
+        "bindings": {
+          "report": {
+            "ref": "artifact://review_report.json"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "report"
+          ]
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {
+          "summary": "node-output://child_contract_check/summary"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "status",
+            "summary",
+            "artifact_refs",
+            "verdict",
+            "open_risks",
+            "metrics"
+          ]
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [
+          "SUBWORKFLOW_FAILED",
+          "SUBWORKFLOW_DEPTH_EXCEEDED"
+        ],
+        "allowed_categories": [
+          "validation",
+          "budget",
+          "internal"
+        ],
+        "retryable_codes": [
+          "SUBWORKFLOW_FAILED"
+        ],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 120,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "validated child summary is returned",
+          "child returns a terminal failure"
+        ],
+        "escalation_condition": "child cannot complete within its declared budget"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "context_policy": {
+        "isolation": "separate",
+        "return_mode": "summary_and_artifacts",
+        "input_mapping": {
+          "report": "report"
+        },
+        "output_mapping": {
+          "summary": "summary"
+        }
+      },
+      "budget": {
+        "max_depth": 3,
+        "max_children": 1,
+        "max_duration_seconds": 120,
+        "max_attempts": 1
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "complete",
+      "kind": "terminal",
+      "name": "Complete",
+      "outcome": "success",
+      "inputs": {
+        "bindings": {
+          "summary": {
+            "ref": "node-output://child_contract_check/summary"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "summary"
+          ]
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [],
+        "allowed_categories": [],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 10,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "workflow is marked completed"
+        ],
+        "escalation_condition": "terminal projection cannot be persisted"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "failed",
+      "kind": "terminal",
+      "name": "Fail",
+      "outcome": "failure",
+      "inputs": {
+        "bindings": {},
+        "schema": {
+          "type": "object"
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [],
+        "allowed_categories": [],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 10,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "workflow is marked failed"
+        ],
+        "escalation_condition": "terminal projection cannot be persisted"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_input_review",
+      "kind": "sequence",
+      "from": {
+        "node_id": "request_input",
+        "port": "request"
+      },
+      "to": {
+        "node_id": "mock_review",
+        "port": "request"
+      }
+    },
+    {
+      "id": "edge_review_gate",
+      "kind": "sequence",
+      "from": {
+        "node_id": "mock_review",
+        "port": "report"
+      },
+      "to": {
+        "node_id": "review_gate",
+        "port": "report"
+      }
+    },
+    {
+      "id": "edge_gate_approved",
+      "kind": "conditional",
+      "from": {
+        "node_id": "review_gate",
+        "port": "case"
+      },
+      "to": {
+        "node_id": "child_contract_check",
+        "port": "report"
+      },
+      "condition": {
+        "language": "oralflow-expression-0.1",
+        "expression": "case",
+        "case": "approved"
+      }
+    },
+    {
+      "id": "edge_gate_retry",
+      "kind": "retry",
+      "from": {
+        "node_id": "review_gate",
+        "port": "case"
+      },
+      "to": {
+        "node_id": "mock_review",
+        "port": "request"
+      },
+      "retry": {
+        "max_traversals": 1,
+        "backoff": {
+          "strategy": "none",
+          "initial_seconds": 0,
+          "max_seconds": 0
+        },
+        "on_exhausted": "escalate"
+      }
+    },
+    {
+      "id": "edge_review_error",
+      "kind": "error",
+      "from": {
+        "node_id": "mock_review",
+        "port": "error"
+      },
+      "to": {
+        "node_id": "failed",
+        "port": "error"
+      },
+      "match": {
+        "codes": [
+          "ROLE_OUTPUT_INVALID",
+          "MOCK_PROVIDER_FAILURE"
+        ]
+      }
+    },
+    {
+      "id": "edge_child_complete",
+      "kind": "subworkflow",
+      "from": {
+        "node_id": "child_contract_check",
+        "port": "summary"
+      },
+      "to": {
+        "node_id": "complete",
+        "port": "summary"
+      },
+      "on_status": "completed",
+      "result_mapping": {
+        "summary": "summary"
+      }
+    }
+  ],
+  "policies": {
+    "max_total_transitions": 20,
+    "max_duration_seconds": 300,
+    "max_failures": 2,
+    "max_replans": 1,
+    "max_children": 1,
+    "max_subworkflow_depth": 3,
+    "human_escalation_condition": "retry is exhausted or the same normalized error occurs three times"
+  },
+  "success_criteria": [
+    {
+      "id": "contract_valid",
+      "description": "The root and child workflows pass all M0 contract validators.",
+      "verification": "automatic",
+      "expression": "validation.errors == 0"
+    }
+  ],
+  "metadata": {
+    "description": "Static M0 example; it is not executed.",
+    "tags": [
+      "m0",
+      "contract"
+    ]
+  }
+}

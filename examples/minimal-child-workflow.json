@@ -1,0 +1,195 @@
+{
+  "schema_version": "0.1.0",
+  "workflow_id": "wf_minimal_child",
+  "workflow_version": "0.1.0",
+  "revision": "rev_001",
+  "name": "M0 minimal child workflow",
+  "goal": "Return one validated summary to the parent workflow.",
+  "status": "draft",
+  "inputs": {
+    "type": "object",
+    "required": [
+      "report"
+    ],
+    "properties": {
+      "report": {
+        "type": "object"
+      }
+    },
+    "additionalProperties": false
+  },
+  "roles": [],
+  "nodes": [
+    {
+      "schema_version": "0.1.0",
+      "id": "child_input",
+      "kind": "input",
+      "name": "Receive parent report",
+      "source": "system",
+      "inputs": {
+        "bindings": {
+          "report": {
+            "ref": "workflow-input://report"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "report"
+          ],
+          "properties": {
+            "report": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {
+          "summary": "node-output://child_input/summary"
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "summary"
+          ],
+          "properties": {
+            "summary": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [
+          "NODE_INPUT_INVALID"
+        ],
+        "allowed_categories": [
+          "validation"
+        ],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 30,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "input is summarized or rejected"
+        ],
+        "escalation_condition": "the parent input cannot be validated"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    },
+    {
+      "schema_version": "0.1.0",
+      "id": "child_complete",
+      "kind": "terminal",
+      "name": "Return summary",
+      "outcome": "success",
+      "inputs": {
+        "bindings": {
+          "summary": {
+            "ref": "node-output://child_input/summary"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "required": [
+            "summary"
+          ]
+        }
+      },
+      "config": {
+        "values": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "outputs": {
+        "destinations": {},
+        "schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "error_contract": {
+        "allowed_codes": [],
+        "allowed_categories": [],
+        "retryable_codes": [],
+        "schema": {
+          "type": "object"
+        }
+      },
+      "execution_policy": {
+        "timeout_seconds": 10,
+        "max_attempts": 1,
+        "exit_conditions": [
+          "validated summary is returned"
+        ],
+        "escalation_condition": "the result cannot be returned to the parent"
+      },
+      "permissions": {
+        "write_paths": [],
+        "command_classes": [],
+        "network": false
+      },
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_child_complete",
+      "kind": "sequence",
+      "from": {
+        "node_id": "child_input",
+        "port": "summary"
+      },
+      "to": {
+        "node_id": "child_complete",
+        "port": "summary"
+      }
+    }
+  ],
+  "policies": {
+    "max_total_transitions": 3,
+    "max_duration_seconds": 60,
+    "max_failures": 1,
+    "max_replans": 0,
+    "max_children": 0,
+    "max_subworkflow_depth": 3,
+    "human_escalation_condition": "the child cannot return a validated summary"
+  },
+  "success_criteria": [
+    {
+      "id": "summary_returned",
+      "description": "A validated summary is returned to the parent.",
+      "verification": "automatic",
+      "expression": "terminal.outcome == 'success'"
+    }
+  ],
+  "metadata": {
+    "description": "Companion child definition for the static M0 example.",
+    "tags": [
+      "m0",
+      "contract",
+      "child"
+    ]
+  }
+}
