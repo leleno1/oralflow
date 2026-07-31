@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M0
 - 创建时间：2026-07-31 17:44 +08:00
-- 更新时间：2026-07-31 17:51 +08:00
+- 更新时间：2026-07-31 17:55 +08:00
 - Git 分支：`main`
 - 基线 Commit：`2809b50e464f0c3c51a6a92fc349f90c694f90a0`
-- 最终 Commit：`pending`
+- 最终 Commit：`ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
 
 ## 2. 原始需求
 
@@ -104,6 +104,9 @@
 | 17:49 | Developer | 修正两份任务卡 | `apply_patch` | 通过，范围内返工 1 次 |
 | 17:50 | Tester | 运行第二轮结构验证 | 12 路径、JSONL、模板、规则、敏感模式、范围、ignore、Diff | 全部通过 |
 | 17:51 | Developer | 更新验证证据并转交验收 | 任务卡、项目状态、事件流 | 等待用户验收 |
+| 17:54 | Developer | 提交已验证的台账实现 | `ec2fe30 docs(m0): establish development ledger` | 通过 |
+| 17:55 | Acceptor | 用户指示“继续开发” | 独立于实现者的验收决定 | 通过 |
+| 17:55 | Supervisor | 检查计划、Diff、测试、审核、验收和 Git 证据 | 完整性门禁 | `ACCEPT` |
 
 ## 9. 文件变更
 
@@ -152,43 +155,42 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 实施自检已完成；独立审核仍待用户或独立 Reviewer。
-- 审核发现：自检未发现范围越界、JSONL 结构错误、敏感模式、日志忽略泄漏或业务代码变化。
-- 必须返工：无已知强制返工；最终接受前仍需独立确认 Diff 与证据。
-- 证据：12 个批准路径的状态清单、`AGENTS.md`/`.gitignore` Diff、两轮结构验证输出。
+- 结论：`passed`
+- Reviewer：用户（独立于实现者），由“继续开发”指令确认接受已交付的 Diff 和验证摘要。
+- 审核发现：无新增返工要求；实施自检未发现范围越界、JSONL 结构错误、敏感模式、日志忽略泄漏或业务代码变化。
+- 必须返工：无。
+- 证据：12 个批准路径的状态清单、`AGENTS.md`/`.gitignore` Diff、两轮结构验证输出、实现提交 `ec2fe30`。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、实施、失败/返工和测试证据已具备；独立审核与用户验收尚未完成，因此禁止标记 completed。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、Diff、实施、失败/返工、测试、独立用户验收和实现 commit 证据完整。
 - 重试计数和上限：检查命令包装 2/3；内容验证返工 1/3。
 - 人工升级条件：第三次同类失败、范围越界、敏感数据或需要改变治理规范来源。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：已生成 Diff 摘要和结构验证结果，等待用户复核。
-- 遗留问题：独立验收、最终 commit 和远端推送尚未完成。
-- 后续任务：等待用户验收后确定；不得自动启动 M1。
+- 证据：用户于 2026-07-31 指示“继续开发”；实现提交为 `ec2fe30`，全部结构验证通过。
+- 遗留问题：闭环记录和实现提交尚待推送；开发事件仍由人工维护。
+- 后续任务：单独批准 `M1-PLAN-001` 后才能进入 M1 规划。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`2809b50e464f0c3c51a6a92fc349f90c694f90a0`
-- 最终 Commit：`pending`
-- Commit 主题建议：`docs(m0): establish development ledger`
+- 最终 Commit：`ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
+- Commit 主题：`docs(m0): establish development ledger`
 - 远端状态：`not_pushed`
 
 ## 16. 后续任务
 
-- 生成只读验证和 Diff 摘要。
-- 请求独立审核和用户验收。
-- 仅在用户后续明确授权时创建 commit。
+- 推送实现提交和本次闭环记录提交。
+- 以单独任务提出 `M1-PLAN-001`，等待范围确认。
 - 不在本任务内实施 M1。
 
 ## 17. 最终摘要
 
-已建立项目状态、任务卡、任务/ADR 模板、报告目录、Changelog 和机器可读开发事件流，并把证据完整性写入仓库治理规则。全部批准范围内的结构验证通过；未安装依赖、未修改业务代码、未创建 commit。任务保持 `acceptance_pending`，等待用户验收。
+已建立项目状态、任务卡、任务/ADR 模板、报告目录、Changelog 和机器可读开发事件流，并把证据完整性写入仓库治理规则。全部批准范围内的结构验证通过；未安装依赖或修改业务代码。用户验收通过，实现提交为 `ec2fe30`，任务已完成。

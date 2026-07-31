@@ -1,19 +1,19 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 17:51 +08:00
+- Last updated: 2026-07-31 17:55 +08:00
 - Current milestone: M0 — Engineering Harness and contract freeze
 - Milestone verdict: Accepted; development-ledger evidence is being added before M1
-- Current task: `M0-RECORD-001`
-- Current task status: `acceptance_pending`
+- Current task: None; waiting for a separately approved task
+- Current task status: `idle`
 - Branch: `main`
-- Local HEAD: `2809b50e464f0c3c51a6a92fc349f90c694f90a0`
-- Remote tracking: `origin/main` (local branch is one commit ahead)
+- Latest recorded implementation commit: `ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
+- Remote tracking: `origin/main` (push pending at ledger closeout)
 
 ## In progress
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M0-RECORD-001` | Establish the Development Harness Ledger | `acceptance_pending` | Acceptor (user) |
+No implementation task is active. Planning the next milestone requires a separately approved task card.
 
 ## Completed
 
@@ -22,11 +22,12 @@
 | `M0-PLAN-001` | Inspect the repository and define the executable M0 plan | Retrospective task record and M0 commit history |
 | M0 implementation | Freeze contracts, validators, tests, shells, and CI | `0cae3ea`, `M0 Quality Gate #1` |
 | M0 hosted acceptance | Record the successful hosted quality gate | Local commit `2809b50` |
+| `M0-RECORD-001` | Establish and validate the Development Harness Ledger | `ec2fe30`, user acceptance on 2026-07-31 |
 
 ## Blockers
 
-- The final acceptance-record commit `2809b50` has not reached `origin/main` because the terminal could resolve GitHub but could not connect to port 443. This is a transport blocker, not a credential or repository-permission failure.
-- M1 must not begin until `M0-RECORD-001` is reviewed and accepted by the user.
+- At ledger closeout, the M0 acceptance and ledger commits still require a successful push after the earlier GitHub port-443 transport failure.
+- M1 must not begin until its first bounded task card and modification scope are approved.
 
 ## Risks
 
@@ -36,7 +37,6 @@
 
 ## Next task
 
-1. Obtain independent review and user acceptance for `M0-RECORD-001`.
-2. Record the accepted task commit when commit authorization is given.
-3. Push the two local commits after GitHub connectivity recovers.
-4. Start no M1 work without a separately approved task card.
+1. Push the local M0 acceptance and ledger commits when GitHub connectivity permits.
+2. Propose `M1-PLAN-001` as a read-only planning task for the no-GUI Workflow core.
+3. Start no M1 implementation without an approved task card, paths, validation commands, and acceptance criteria.

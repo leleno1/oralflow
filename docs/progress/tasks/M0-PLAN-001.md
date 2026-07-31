@@ -8,7 +8,7 @@
 - 创建时间：2026-07-31（追溯记录；原始精确时间未落盘）
 - 更新时间：2026-07-31 17:44 +08:00
 - Git 分支：`main`
-- 最终 Commit：`pending`（本任务原本为只读规划；任务卡由 `M0-RECORD-001` 追溯创建）
+- 最终 Commit：`ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`（原任务只读；该提交落盘追溯任务卡）
 
 ## 2. 原始需求
 
@@ -132,7 +132,7 @@
 
 - 分支：`main`
 - 原任务 Commit：不适用，原任务按要求只读。
-- 追溯任务卡 Commit：`pending`
+- 追溯任务卡 Commit：`ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
 - 相关 M0 提交：`6a17c79` 至 `2809b50`
 - 远端状态：`2809b50` 尚未推送；其父提交已在 `origin/main` 通过 hosted CI。
 
