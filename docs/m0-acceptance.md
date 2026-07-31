@@ -3,9 +3,11 @@
 - Task: M0 — Engineering Harness and contract freeze
 - Date: 2026-07-31
 - Local verdict: Accepted
-- Final verdict: Pending remote CI
+- Final verdict: Accepted
 - Branch: `main`
 - CI definition commit: `3556627`
+- Acceptance source commit: `0cae3ea09f6a50dc8056773f788f673559c5dddb`
+- Remote: `https://github.com/leleno1/oralflow.git`
 
 ## 1. Scope result
 
@@ -119,17 +121,28 @@ adeea4f test(contracts): cover valid and rejected M0 definitions
 3556627 ci: add Windows M0 quality gate
 ```
 
-No remote, tag, release, or push was created during local implementation.
+No remote, tag, release, or push was created during the bounded local implementation loops. After local acceptance, `main` was pushed to the approved `origin` remote and configured to track `origin/main`.
 
-## 7. Open evidence and risks
+## 7. Remote CI evidence and residual risks
 
-### Remote CI pending
+### Remote CI passed
 
-The GitHub Actions definition has not run because the local repository has no remote and GitHub CLI is unavailable. Local commands equivalent to every CI validation step passed, but the final M0 verdict remains pending until one hosted `windows-latest` run succeeds.
+The first hosted run passed from the pushed `main` branch:
 
-### Clean environment proof pending CI
+```text
+Workflow run: M0 Quality Gate #1
+Head commit: 0cae3ea
+Branch: main
+Conclusion: success
+Duration: 4m 24s
+Evidence reviewed: 2026-07-31
+```
 
-The local Conda environment was repaired after an interrupted initial installation and passes dependency checks. A clean hosted CI environment must prove that `environment.yml` reproduces the same result from scratch.
+The run is listed at `https://github.com/leleno1/oralflow/actions`. The immutable workflow run number and head commit were verified from the user-supplied GitHub Actions result.
+
+### Clean environment proof complete
+
+The local Conda environment was repaired after an interrupted initial installation and passes dependency checks. `M0 Quality Gate #1` independently reproduced the environment and passed all checks on hosted `windows-latest`.
 
 ### Transitive deprecation notice
 
@@ -137,12 +150,12 @@ npm reports a deprecation notice for `whatwg-encoding`, a transitive development
 
 ## 8. Final acceptance condition
 
-M0 becomes fully accepted only when:
+M0 acceptance conditions:
 
-1. the repository is pushed to the approved remote;
-2. the `M0 Quality Gate` GitHub Actions workflow runs on `windows-latest`;
-3. all workflow steps pass from a clean checkout;
-4. the successful run URL or immutable run identifier is recorded here;
-5. the user approves the M0 contract freeze.
+1. [x] the repository is pushed to the approved remote;
+2. [x] the `M0 Quality Gate` GitHub Actions workflow runs on `windows-latest`;
+3. [x] all workflow steps pass from a clean checkout;
+4. [x] the immutable run identifier and head commit are recorded here;
+5. [x] the user supplied the successful hosted-run evidence and authorized continuation.
 
-Until then, M1 implementation must not begin.
+M0 is accepted. M1 remains outside this task and must begin only under a separately approved scope.
