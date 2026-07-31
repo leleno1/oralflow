@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 19:11 +08:00
-- 更新时间：2026-07-31 19:21 +08:00
+- 更新时间：2026-07-31 19:57 +08:00
 - Git 分支：`main`
 - 基线 Commit：`d7e307b2d594f706b1fbff3824680d56ac477885`
-- 最终 Commit：`pending`
+- 最终 Commit：`cf22b57109e30a09725a5e67c26107653d8096d9`
 
 ## 2. 原始需求
 
@@ -134,41 +134,41 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 实施自检，不替代用户独立验收。
+- 结论：`passed`
+- Reviewer：Codex 实施自检与用户独立验收。
 - 审核发现：投影独立验证 Workflow/Event/Run Schema、完整 digest、连续 sequence、Event ID、固定身份、Run/Node 状态机和单调 counter；非法历史在首个错误退出，不修改输入或历史。
 - 必须返工：无已知项。投影要求持久化事件流从 `WORKFLOW_VALIDATION_STARTED` 开始并携带 pinned ref；这是冻结 M1 preflight/replay 语义，不兼容缺少该锚点的旧运行历史。
 - 证据：6 路径 Diff、保护目录零改动、19 个目标测试、Ruff、strict mypy、13 个 contract tests、72 个全量 tests。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、状态机/计数负例、测试和自检证据齐全；最终验收必须由用户独立给出。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、Diff、状态机/计数负例、测试、自检和用户独立验收证据齐全。
 - 重试计数和上限：lint 1/3，typing 1/3。
 - 人工升级条件：需要修改冻结契约、越过批准路径，或第三次出现相同归一化失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：`pending`
-- 遗留问题：用户验收、任务 commit、推送和 hosted CI 尚未完成。
-- 后续任务：验收后才可单独批准 `M1-NODE-001`。
+- 证据：19 个目标测试、Ruff、strict mypy、13 个 contract tests、72 个全量 tests，以及用户明确验收。
+- 遗留问题：提交推送后的 hosted CI 结果仍需观察，不阻塞已批准的下一项本地实施。
+- 后续任务：用户已批准继续 `M1-NODE-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`d7e307b2d594f706b1fbff3824680d56ac477885`
-- 最终 Commit：`pending`
-- Commit 主题：`pending`
+- 最终 Commit：`cf22b57109e30a09725a5e67c26107653d8096d9`
+- Commit 主题：`feat(runtime): add deterministic run projection`
 - 修改文件：6 个批准路径，详见第 9 节
-- 远端状态：`not_pushed`
+- 远端状态：`pending_push`
 
 ## 16. 后续任务
 
-- 本任务验收后建议 `M1-NODE-001`；不得在本任务中提前实现节点行为或执行器。
+- 创建 `M1-NODE-001` 任务卡；不得在该任务内提前实现事件追加或执行器。
 
 ## 17. 最终摘要
 
-已实现确定性纯 Run 投影和 Event replay，覆盖 Schema/digest/sequence/身份、Run/Node 状态、错误、Artifact、transition/retry/budget 计数及非法历史拒绝。19 个目标测试、Ruff、strict mypy、13 个 contract tests 和 72 个全量 tests 均通过；保护目录零改动，任务等待用户验收且未创建本任务 commit。
+已实现确定性纯 Run 投影和 Event replay，覆盖 Schema/digest/sequence/身份、Run/Node 状态、错误、Artifact、transition/retry/budget 计数及非法历史拒绝。19 个目标测试、Ruff、strict mypy、13 个 contract tests 和 72 个全量 tests 均通过；保护目录零改动，用户已验收，实施提交为 `cf22b57`。
