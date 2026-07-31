@@ -9,10 +9,12 @@
 
 ## Current milestone
 
-- The current milestone is M0: engineering Harness and contract freeze.
-- M0 may establish documentation, schemas, examples, validators, tests, empty frontend/backend scaffolding, and CI.
-- Do not implement the workflow Runtime, production GUI, English-training features, real model calls, or external service integrations during M0.
-- Do not add Codex SDK, OpenAI API, Redis, PostgreSQL, Docker, or cloud infrastructure unless a later approved task explicitly requires them.
+- M0 engineering Harness and contract freeze is accepted.
+- The current milestone is M1: deterministic no-GUI Workflow core.
+- M1 may implement strict Run/Event domain models, an append-only EventStore boundary, deterministic Run projection, allowlisted pure node handlers, sequence/conditional/error routing, finite retry, pause/resume, SQLite replay, synthetic examples, and automated tests.
+- M1 implementation must follow `docs/m1-runtime-semantics.md` and ADR-0002 without changing frozen M0 Schemas unless a separately reviewed migration task is approved.
+- Do not implement production GUI, 7+1 Agent execution, Observer/Supervisor automation, `agent_task`, `code_task`, `command`, `human_approval`, `subworkflow`, Artifact content storage, English-training features, real model calls, or external service integrations during M1.
+- Do not add Codex SDK, OpenAI API, Redis, PostgreSQL, Docker, cloud infrastructure, or new dependencies unless a later approved task explicitly requires them.
 
 ## Harness Engineering rules
 

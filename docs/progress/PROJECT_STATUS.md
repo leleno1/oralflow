@@ -1,10 +1,10 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 18:02 +08:00
+- Last updated: 2026-07-31 18:19 +08:00
 - Current milestone: M1 planning — no-GUI Workflow core
 - Milestone verdict: M0 accepted; M1 implementation has not started
-- Current task: `M1-PLAN-001`
-- Current task status: `awaiting_approval`
+- Current task: `M1-ARCH-001`
+- Current task status: `acceptance_pending`
 - Branch: `main`
 - Latest recorded implementation commit: `ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
 - Remote tracking: `origin/main` synchronized at `71d8da2`; `M0 Quality Gate #2` passed
@@ -13,7 +13,7 @@
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M1-PLAN-001` | Plan the no-GUI Workflow core as bounded implementation loops | `awaiting_approval` | Plan Reviewer / user |
+| `M1-ARCH-001` | Freeze deterministic M1 Runtime semantics and activate M1 repository boundaries | `acceptance_pending` | Acceptor (user) |
 
 ## Completed
 
@@ -24,11 +24,12 @@
 | M0 hosted acceptance | Record the successful hosted quality gate | Local commit `2809b50` |
 | `M0-RECORD-001` | Establish and validate the Development Harness Ledger | `ec2fe30`, user acceptance on 2026-07-31 |
 | M0 ledger hosted acceptance | Run the closed ledger state on hosted Windows CI | `M0 Quality Gate #2`, head `71d8da2` |
+| `M1-PLAN-001` | Plan the no-GUI Workflow core as 12 bounded loops | `8a23019`, user approval on 2026-07-31 |
 
 ## Blockers
 
-- No repository or environment blocker is known for read-only M1 planning.
-- M1 implementation remains blocked until this plan is reviewed and the first implementation task receives explicit scope approval.
+- No unresolved implementation blocker is known for `M1-ARCH-001`.
+- Runtime source implementation remains blocked until the user accepts the M1 semantics and repository boundaries.
 
 ## Risks
 
@@ -38,6 +39,6 @@
 
 ## Next task
 
-1. Complete `M1-PLAN-001` using read-only architecture and contract inspection.
-2. Obtain plan review and user approval for the first bounded M1 implementation task.
-3. Start no Runtime implementation without approved paths, validation commands, and acceptance criteria.
+1. Obtain user acceptance for `M1-ARCH-001`.
+2. Record and push the accepted documentation commit.
+3. Start `M1-DOMAIN-001` only after a separate approval.

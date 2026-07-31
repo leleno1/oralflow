@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`awaiting_approval`
-- 当前角色：`plan_reviewer`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 18:02 +08:00
-- 更新时间：2026-07-31 18:07 +08:00
+- 更新时间：2026-07-31 18:13 +08:00
 - Git 分支：`main`
 - 基线 Commit：`71d8da2fccf48affc0cf5019e1f77aea4ae81c4f`
-- 最终 Commit：`pending`
+- 最终 Commit：`8a230198eba43cea04fc08bd2021e34628e64e62`
 
 ## 2. 原始需求
 
@@ -273,6 +273,8 @@ M1-ARCH-001
 | 18:05 | Planner | 检查 Run/Event Schema、示例、验证器、后端骨架和测试入口 | 只读 PowerShell 检查 | 通过 |
 | 18:07 | Plan Reviewer | 检查范围、依赖、有界性和契约冲突 | 计划自检 | conditional；等待用户批准 |
 | 18:08 | Tester | 验证任务范围、JSONL、空白、任务数量和 Diff | 只读 PowerShell/Git 检查 | 全部通过 |
+| 18:12 | Acceptor | 用户批准推荐的首个 M1 任务 | “批准 M1-ARCH-001，继续实施。” | 计划通过 |
+| 18:13 | Developer | 提交已批准的 M1 计划 | `8a23019 docs(m1): add runtime implementation plan` | 通过 |
 
 ## 9. 文件变更
 
@@ -311,32 +313,33 @@ M1-ARCH-001
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 计划自检；最终由用户独立批准。
+- 结论：`passed`
+- Reviewer：Codex 计划自检；用户独立批准。
 - 审核发现：计划覆盖 M1 规定能力，所有环路有边界；首个任务必须先修订里程碑治理和冻结执行语义。
-- 必须返工：无已知项；用户若选择 CLI、提前 SQLite 或修改表达式能力，需要重新拆分计划。
+- 必须返工：无。用户若后续选择 CLI、提前 SQLite 或修改表达式能力，需要重新拆分计划。
 - 证据：开发规范 M1 段、M0 架构/DSL/契约、Run/Event Schema、后端与测试目录检查。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_approval`
-- 原因：计划和自检证据完整；实施范围涉及正式切换到 M1，必须由用户批准首个任务。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、自检、用户批准和 Git 实现提交证据完整。
 - 重试计数和上限：0/3。
 - 人工升级条件：需要修改冻结契约、范围无法限定或第三次计划复核仍失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：本任务卡、只读仓库检查和计划复核结果。
+- 证据：本任务卡、只读仓库检查、计划复核结果和用户对 `M1-ARCH-001` 的明确批准。
 - 后续任务：推荐 `M1-ARCH-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`71d8da2fccf48affc0cf5019e1f77aea4ae81c4f`
-- 最终 Commit：`pending`
+- 最终 Commit：`8a230198eba43cea04fc08bd2021e34628e64e62`
+- Commit 主题：`docs(m1): add runtime implementation plan`
 - 远端状态：`not_pushed`
 
 ## 16. 后续任务
@@ -345,4 +348,4 @@ M1-ARCH-001
 
 ## 17. 最终摘要
 
-已完成 M1 无 GUI Workflow 核心的只读规划，形成 12 个连续、可独立验证的开发循环。推荐先执行 `M1-ARCH-001` 冻结执行语义并切换里程碑约束。尚未修改 Runtime、测试、契约或依赖，当前等待用户批准。
+已完成 M1 无 GUI Workflow 核心的只读规划，形成 12 个连续、可独立验证的开发循环。用户已批准先执行 `M1-ARCH-001`。本任务未修改 Runtime、测试、契约或依赖，计划提交为 `8a23019`。
