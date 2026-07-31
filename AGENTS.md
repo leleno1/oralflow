@@ -38,6 +38,30 @@
 - Do not delete, overwrite, migrate, publish, or access production data without explicit confirmation.
 - Do not install or upgrade dependencies without explicit approval.
 
+## Development Harness Ledger
+
+Development-process records are distinct from product runtime records. Development work is tracked in `docs/progress/` and `logs/development-events.jsonl`; future Workflow, Run, Role, and Agent behavior belongs in the product event store defined by the runtime contracts. Do not mix the two event streams.
+
+1. Every development task must have a unique task ID and a task card under `docs/progress/tasks/`.
+2. Before modifying code, configuration, contracts, or documentation, create or update the corresponding task card.
+3. Every task card must record the original request, objective, implementation plan, allowed and forbidden scope, prerequisites, and executable acceptance criteria.
+4. After implementation, record the actual files changed, commands executed, Diff summary, test commands, results, failures, and retry count.
+5. Reviewer and Acceptor conclusions must be structured, identify the evidence reviewed, and remain independent of the implementation decision.
+6. A task must not be marked `completed` when plan, Diff, test, review, or acceptance evidence is missing. Failed tests cannot be presented as formal completion evidence.
+7. Observer records execution deviations, retries, failures, anomalies, context switches, and unresolved risks as facts; Observer does not route execution or grant acceptance.
+8. Supervisor checks record completeness and must block completion or escalate to the user when required evidence is absent.
+9. Never store credentials, tokens, private recording content, unredacted personal material, or secrets in task cards, reports, fixtures, or event logs.
+10. Every completed task must record its Git branch, final commit hash, changed files, test result, acceptance result, and remote status. Use `pending` until a commit exists; explain `not_applicable` for an approved read-only or no-op task.
+
+Additional ledger rules:
+
+- `docs/progress/PROJECT_STATUS.md` is the project dashboard and must be updated when a task changes milestone status, becomes blocked, is accepted, or changes the next approved task.
+- `docs/progress/TASK_TEMPLATE.md` defines the minimum task-card structure and supported development event names.
+- `logs/development-events.jsonl` is UTF-8, append-only, and machine-readable: one complete JSON object per non-empty line. Correct prior information with a new event rather than deleting or rewriting history.
+- `CHANGELOG.md` contains only user-visible capabilities and significant engineering changes; detailed command history belongs in the task card and event ledger.
+- Store detailed test, review, and acceptance evidence under `reports/tests/`, `reports/reviews/`, and `reports/acceptance/` when a task requires standalone reports.
+- Do not commit generated runtime logs merely because the development ledger has a tracked exception under `logs/`.
+
 ## Environment
 
 - Target operating system: Windows.

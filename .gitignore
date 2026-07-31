@@ -52,7 +52,8 @@ uploads/
 
 # Logs and temporary files
 *.log
-logs/
+logs/*
+!logs/development-events.jsonl
 tmp/
 temp/
 *.tmp
