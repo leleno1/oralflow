@@ -1,0 +1,79 @@
+name: M0 Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m0-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Contracts and application shells
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Create OralFlow Python environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: oralflow
+          environment-file: environment.yml
+          auto-activate-base: false
+          auto-update-conda: false
+
+      - name: Report Python version
+        run: conda run -n oralflow python --version
+
+      - name: Validate Schemas and example Workflows
+        run: conda run -n oralflow python scripts\validate_examples.py
+
+      - name: Lint Python
+        run: conda run -n oralflow python -m ruff check backend scripts tests
+
+      - name: Type-check Python
+        run: conda run -n oralflow python -m mypy backend scripts tests
+
+      - name: Test Python
+        run: conda run -n oralflow python -m pytest -q
+
+      - name: Check Python dependencies
+        run: conda run -n oralflow python -m pip check
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.14.0
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install locked frontend dependencies
+        run: npm.cmd --prefix frontend ci
+
+      - name: Audit production frontend dependencies
+        run: npm.cmd --prefix frontend audit --omit=dev --audit-level=high
+
+      - name: Lint frontend
+        run: npm.cmd --prefix frontend run lint
+
+      - name: Type-check frontend
+        run: npm.cmd --prefix frontend run typecheck
+
+      - name: Test frontend
+        run: npm.cmd --prefix frontend run test
+
+      - name: Build frontend
+        run: npm.cmd --prefix frontend run build
+
+      - name: Check whitespace
+        run: git diff --check
