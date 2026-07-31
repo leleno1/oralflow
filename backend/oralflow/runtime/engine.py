@@ -23,6 +23,13 @@ from oralflow.domain.runtime import (
 )
 from oralflow.events import EventFactory, EventStore, EventStoreError
 from oralflow.runtime.bindings import NodeRuntimeError, resolve_node_inputs
+from oralflow.runtime.error_routing import (
+    ErrorRoutingError,
+    NodeFailure,
+    normalize_node_failure,
+    normalize_unknown_failure,
+    select_error_edge,
+)
 from oralflow.runtime.expressions import evaluate_path
 from oralflow.runtime.handlers import (
     SUPPORTED_NODE_KINDS,
@@ -35,7 +42,7 @@ from oralflow.validators import SchemaBundle, validate_instance, validate_workfl
 
 RUNTIME_SEMANTICS_VERSION = "0.1.0"
 WORKFLOW_SCHEMA_ID = "urn:oralflow:schema:workflow:0.1.0"
-_SUPPORTED_EDGE_KINDS = frozenset({"sequence", "conditional"})
+_SUPPORTED_EDGE_KINDS = frozenset({"sequence", "conditional", "error"})
 _INLINE_EVENT_LIMIT = 16 * 1024
 
 
@@ -179,19 +186,23 @@ def _prepare_workflow(
 
     for node_id, node in nodes.items():
         outgoing = outgoing_lists[node_id]
+        success_edges = [edge for edge in outgoing if edge["kind"] != "error"]
         kind = node["kind"]
         if kind == "terminal":
             continue
         if kind == "gate":
-            if any(edge["kind"] != "conditional" for edge in outgoing):
+            if any(edge["kind"] != "conditional" for edge in success_edges):
                 _fail("EDGE_KIND_UNSUPPORTED", "Gate nodes require conditional edges")
             expression = node["condition"]["expression"]
-            if any(edge["condition"]["expression"] != expression for edge in outgoing):
+            if any(
+                edge["condition"]["expression"] != expression
+                for edge in success_edges
+            ):
                 _fail(
                     "EXPRESSION_INVALID",
                     "Conditional edge expression must equal its gate expression",
                 )
-            cases = [edge["condition"]["case"] for edge in outgoing]
+            cases = [edge["condition"]["case"] for edge in success_edges]
             if not cases:
                 _fail("EDGE_SELECTION_NONE", f"Gate {node_id!r} has no conditional edge")
             if len(cases) != len(set(cases)):
@@ -200,10 +211,12 @@ def _prepare_workflow(
                     f"Gate {node_id!r} has duplicate conditional cases",
                 )
         else:
-            candidates = [edge for edge in outgoing if edge["kind"] == "sequence"]
+            candidates = [
+                edge for edge in success_edges if edge["kind"] == "sequence"
+            ]
             if len(candidates) == 0:
                 _fail("EDGE_SELECTION_NONE", f"Node {node_id!r} has no sequence edge")
-            if len(candidates) > 1 or len(candidates) != len(outgoing):
+            if len(candidates) > 1 or len(candidates) != len(success_edges):
                 _fail(
                     "EDGE_SELECTION_AMBIGUOUS",
                     f"Node {node_id!r} does not have one unique sequence edge",
@@ -352,6 +365,9 @@ class _Execution:
             error=_error(error.code, f"Execution failed with {error.code}", category),
         )
 
+    def fail_with_structured_error(self, error: StructuredError) -> Run:
+        return self.append(EventType.RUN_FAILED, error=error)
+
     def fail_validation(self, error: EngineError) -> Run:
         return self.append(
             EventType.WORKFLOW_VALIDATION_FAILED,
@@ -374,38 +390,40 @@ class _Execution:
     def execute_node(
         self,
         node: JsonObject,
-    ) -> NodeHandlerResult | Run:
+    ) -> NodeHandlerResult | NodeFailure:
         node_id = node["id"]
         self.append(EventType.NODE_STARTED, node_id=node_id)
         try:
             resolved = resolve_node_inputs(node, self.initial_inputs, self.node_outputs)
         except NodeRuntimeError as node_error:
-            normalized = _error(
-                node_error.code,
-                f"Node execution failed with {node_error.code}",
-                ErrorCategory.VALIDATION,
+            normalized = normalize_node_failure(
+                node,
+                code=node_error.code,
+                category=ErrorCategory.VALIDATION,
             )
             self.append(
                 EventType.NODE_INPUT_REJECTED,
                 node_id=node_id,
                 error=normalized,
+                runtime={"normalized_error_code": normalized.code},
             )
-            return self.append(EventType.RUN_FAILED, error=normalized)
+            return NodeFailure(normalized)
 
         try:
             resolved_inline = _inline_value(resolved, "Node input")
         except EngineError as inline_error:
-            normalized = _error(
-                inline_error.code,
-                f"Node input was rejected with {inline_error.code}",
-                ErrorCategory.VALIDATION,
+            normalized = normalize_node_failure(
+                node,
+                code=inline_error.code,
+                category=ErrorCategory.VALIDATION,
             )
             self.append(
                 EventType.NODE_INPUT_REJECTED,
                 node_id=node_id,
                 error=normalized,
+                runtime={"normalized_error_code": normalized.code},
             )
-            return self.append(EventType.RUN_FAILED, error=normalized)
+            return NodeFailure(normalized)
 
         try:
             result = execute_node_handler(
@@ -414,42 +432,55 @@ class _Execution:
                 schema_bundle=self.schema_bundle,
             )
         except NodeRuntimeError as node_error:
-            normalized = _error(
-                node_error.code,
-                f"Node execution failed with {node_error.code}",
-                ErrorCategory.VALIDATION,
+            normalized = normalize_node_failure(
+                node,
+                code=node_error.code,
+                category=ErrorCategory.VALIDATION,
             )
             if node_error.code.startswith("NODE_INPUT_"):
                 self.append(
                     EventType.NODE_INPUT_REJECTED,
                     node_id=node_id,
                     error=normalized,
+                    runtime={"normalized_error_code": normalized.code},
                 )
             elif node_error.code == "NODE_OUTPUT_INVALID":
+                self.append(
+                    EventType.NODE_INPUT_VALIDATED,
+                    node_id=node_id,
+                    runtime={"input": resolved_inline},
+                )
                 self.append(
                     EventType.NODE_OUTPUT_REJECTED,
                     node_id=node_id,
                     error=normalized,
+                    runtime={"normalized_error_code": normalized.code},
                 )
             else:
-                self.append(EventType.NODE_FAILED, node_id=node_id, error=normalized)
-            return self.append(EventType.RUN_FAILED, error=normalized)
+                self.append(
+                    EventType.NODE_FAILED,
+                    node_id=node_id,
+                    error=normalized,
+                    runtime={"normalized_error_code": normalized.code},
+                )
+            return NodeFailure(normalized)
         except Exception:
-            normalized = _error(
-                "NODE_INTERNAL_ERROR",
-                "Node execution failed with NODE_INTERNAL_ERROR",
-                ErrorCategory.INTERNAL,
+            normalized = normalize_unknown_failure()
+            self.append(
+                EventType.NODE_FAILED,
+                node_id=node_id,
+                error=normalized,
+                runtime={"normalized_error_code": normalized.code},
             )
-            self.append(EventType.NODE_FAILED, node_id=node_id, error=normalized)
-            return self.append(EventType.RUN_FAILED, error=normalized)
+            return NodeFailure(normalized)
 
         try:
             output_inline = _inline_value(result.output, "Node output")
         except EngineError as inline_error:
-            normalized = _error(
-                inline_error.code,
-                f"Node output was rejected with {inline_error.code}",
-                ErrorCategory.VALIDATION,
+            normalized = normalize_node_failure(
+                node,
+                code=inline_error.code,
+                category=ErrorCategory.VALIDATION,
             )
             self.append(
                 EventType.NODE_INPUT_VALIDATED,
@@ -460,8 +491,9 @@ class _Execution:
                 EventType.NODE_OUTPUT_REJECTED,
                 node_id=node_id,
                 error=normalized,
+                runtime={"normalized_error_code": normalized.code},
             )
-            return self.append(EventType.RUN_FAILED, error=normalized)
+            return NodeFailure(normalized)
         self.append(
             EventType.NODE_INPUT_VALIDATED,
             node_id=node_id,
@@ -551,8 +583,44 @@ def execute_workflow(
         visited.add(current_id)
         node = prepared.nodes[current_id]
         outcome = execution.execute_node(node)
-        if isinstance(outcome, Run):
-            return outcome
+        if isinstance(outcome, NodeFailure):
+            budget_error = execution.budget_error(prepared)
+            if budget_error is not None:
+                return execution.fail_run(budget_error, ErrorCategory.BUDGET)
+            try:
+                error_edge = select_error_edge(
+                    prepared.outgoing[current_id],
+                    outcome.error,
+                )
+            except ErrorRoutingError as routing_error:
+                return execution.fail_run(
+                    EngineError(str(routing_error), code=routing_error.code),
+                    ErrorCategory.VALIDATION,
+                )
+            if error_edge is None:
+                return execution.fail_with_structured_error(outcome.error)
+            next_transition = execution.transitions + 1
+            if next_transition > prepared.max_transitions:
+                return execution.fail_run(
+                    EngineError(
+                        "Workflow transition budget is exhausted",
+                        code="RUN_BUDGET_EXHAUSTED",
+                    ),
+                    ErrorCategory.BUDGET,
+                )
+            execution.transitions = next_transition
+            current_id = error_edge["to"]["node_id"]
+            execution.append(
+                EventType.NODE_QUEUED,
+                node_id=current_id,
+                attempt=1,
+                runtime={
+                    "incoming_edge_id": error_edge["id"],
+                    "transition_index": execution.transitions,
+                    "normalized_error_code": outcome.error.code,
+                },
+            )
+            continue
 
         budget_error = execution.budget_error(prepared)
         if budget_error is not None:

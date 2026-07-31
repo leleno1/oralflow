@@ -1,19 +1,19 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 20:51 +08:00
+- Last updated: 2026-07-31 21:03 +08:00
 - Current milestone: M1 — no-GUI Workflow core
 - Milestone verdict: M0 accepted; M1 architecture semantics accepted
 - Current task: `M1-ERROR-001`
-- Current task status: `approved_not_started`
+- Current task status: `acceptance_pending`
 - Branch: `main`
 - Latest recorded implementation commit: `089098966fc5b64ee11d30e09497801d8c484620`
-- Remote tracking: local `main` is ahead of `origin/main`; M1 executor commits are pending push
+- Remote tracking: local `main` matches `origin/main` at `0e8c6b7`
 
 ## In progress
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M1-ERROR-001` | Implement structured error routing and output gate integration | `approved_not_started` | Planner |
+| `M1-ERROR-001` | Implement structured error routing and output gate integration | `acceptance_pending` | Acceptor (user) |
 
 ## Completed
 
@@ -34,7 +34,7 @@
 
 ## Blockers
 
-- No unresolved implementation blocker is known for `M1-ERROR-001`.
+- No unresolved implementation blocker is known for `M1-ERROR-001`; user acceptance is pending.
 
 ## Risks
 
@@ -44,6 +44,6 @@
 
 ## Next task
 
-1. Push the accepted M1 executor implementation and closure commits.
-2. Create the bounded `M1-ERROR-001` task card from the frozen error semantics.
-3. Implement and independently validate structured error routing without adding retry behavior.
+1. Obtain independent user acceptance for `M1-ERROR-001`.
+2. After acceptance, create and push the task implementation and closure commits.
+3. Start `M1-RETRY-001` only after explicit user approval.
