@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 20:01 +08:00
-- 更新时间：2026-07-31 20:10 +08:00
+- 更新时间：2026-07-31 20:26 +08:00
 - Git 分支：`main`
 - 基线 Commit：`6d7cab2d569b73b2ab146c1880d63af6eb3632de`
-- 最终 Commit：`pending`
+- 最终 Commit：`e3405c15dab2028f44c1d7367416b14f5b0c9f52`
 
 ## 2. 原始需求
 
@@ -87,6 +87,8 @@
 | 20:08 | Reviewer | 补充不可解析本地 `$ref` 稳定错误 | Diff 自检 | 目标测试增至 31 passed |
 | 20:09 | Tester | 运行目标/全量 Ruff、mypy、示例、contract 和全量 pytest | 最终质量门禁 | 103 passed；全部通过 |
 | 20:09 | Tester | 检查批准路径、保护目录、JSONL 和 Git Diff | PowerShell/Git | 全部通过 |
+| 20:26 | Acceptor | 独立验收并授权提交及下一任务 | 用户明确指令 | 通过 |
+| 20:26 | Developer | 创建已验收实现提交 | `git commit` | `e3405c1` |
 
 ## 9. 文件变更
 
@@ -137,41 +139,41 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 实施自检，不替代用户独立验收。
+- 结论：`passed`
+- Reviewer：Codex 实施自检与用户独立验收。
 - 审核发现：绑定只接受批准协议；表达式是正则约束的 own-key path；远程 Schema ref 在解析前阻断；四类节点和两个 transform 都是固定纯函数；Node/input/config/output 四层门禁完整。
 - 必须返工：无已知项。uppercase 约定要求 resolved inputs 中恰好一个字符串字段；未来若需要多字符串选择器，必须先单独冻结 config 契约。
 - 证据：8 路径 Diff、保护目录零改动、31 个目标测试、Ruff、strict mypy、13 个 contract tests、103 个全量 tests。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、安全/Schema 负例、失败返工、测试和自检证据齐全；最终验收必须由用户独立给出。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、Diff、安全/Schema 负例、失败返工、测试、自检和用户独立验收证据齐全。
 - 重试计数和上限：环境输出 1/3、fixture 1/3、lint 1/3。
 - 人工升级条件：需要修改冻结契约、越过批准路径，或第三次出现相同归一化失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：`pending`
-- 遗留问题：用户验收、任务 commit、推送和 hosted CI 尚未完成。
-- 后续任务：验收后才可单独批准 `M1-EXEC-001`。
+- 证据：31 个目标测试、Ruff、strict mypy、13 个 contract tests、103 个全量 tests，以及用户明确验收。
+- 遗留问题：提交推送后的 hosted CI 结果仍需观察，不阻塞已批准的下一项本地实施。
+- 后续任务：用户已批准继续 `M1-EXEC-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`6d7cab2d569b73b2ab146c1880d63af6eb3632de`
-- 最终 Commit：`pending`
-- Commit 主题：`pending`
+- 最终 Commit：`e3405c15dab2028f44c1d7367416b14f5b0c9f52`
+- Commit 主题：`feat(runtime): add deterministic node handlers`
 - 修改文件：8 个批准路径，详见第 9 节
 - 远端状态：`not_pushed`
 
 ## 16. 后续任务
 
-- 本任务验收后建议 `M1-EXEC-001`；不得在本任务中提前实现执行器。
+- 创建 `M1-EXEC-001` 任务卡；执行器仍须遵守冻结 M1 语义与有界路由约束。
 
 ## 17. 最终摘要
 
-已实现纯绑定解析、安全 path-only 表达式、离线 embedded Schema 门禁和 input/uppercase/length_evaluation/gate/terminal allowlist handlers。31 个目标测试、Ruff、strict mypy、13 个 contract tests 和 103 个全量 tests 均通过；保护目录零改动，任务等待用户验收且未创建本任务 commit。
+已实现纯绑定解析、安全 path-only 表达式、离线 embedded Schema 门禁和 input/uppercase/length_evaluation/gate/terminal allowlist handlers。31 个目标测试、Ruff、strict mypy、13 个 contract tests 和 103 个全量 tests 均通过；保护目录零改动，用户已验收，实施提交为 `e3405c1`。
