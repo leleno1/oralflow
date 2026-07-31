@@ -1,10 +1,10 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 18:49 +08:00
+- Last updated: 2026-07-31 19:01 +08:00
 - Current milestone: M1 — no-GUI Workflow core
 - Milestone verdict: M0 accepted; M1 architecture semantics accepted
-- Current task: `M1-EVENT-001` (approved, task card pending creation)
-- Current task status: `approved`
+- Current task: `M1-EVENT-001`
+- Current task status: `acceptance_pending`
 - Branch: `main`
 - Latest recorded implementation commit: `18e1228013228c66d566db52f956bbc3a4ee1e0c`
 - Remote tracking: local `main` is ahead of `origin/main`; M1 domain commits are pending push
@@ -13,7 +13,7 @@
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M1-EVENT-001` | Implement append-only EventStore protocol and deterministic in-memory store | `approved` | Developer |
+| `M1-EVENT-001` | Implement append-only EventStore protocol and deterministic in-memory store | `acceptance_pending` | Acceptor (user) |
 
 ## Completed
 
@@ -30,7 +30,7 @@
 
 ## Blockers
 
-- No unresolved implementation blocker is known for `M1-EVENT-001`.
+- No unresolved implementation blocker is known for `M1-EVENT-001`; user acceptance is pending.
 
 ## Risks
 
@@ -40,6 +40,6 @@
 
 ## Next task
 
-1. Record and push the accepted `M1-DOMAIN-001` commits.
-2. Create the `M1-EVENT-001` task card before EventStore source changes.
-3. Implement and independently validate the append-only EventStore boundary.
+1. Obtain independent user acceptance for `M1-EVENT-001`.
+2. After acceptance, create and push the task commit and close the ledger record.
+3. Start `M1-PROJECTION-001` only after separate user approval.
