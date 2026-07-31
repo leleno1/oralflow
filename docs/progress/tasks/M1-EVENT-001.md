@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 18:52 +08:00
-- 更新时间：2026-07-31 19:01 +08:00
+- 更新时间：2026-07-31 19:05 +08:00
 - Git 分支：`main`
 - 基线 Commit：`6d88e3666c2e8c90aee05898155a70081f261387`
-- 最终 Commit：`pending`
+- 最终 Commit：`8e3c30f8336b2e5157c7eda22c09160539e9935c`
 
 ## 2. 原始需求
 
@@ -132,41 +132,41 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 实施自检，不替代用户独立验收。
+- 结论：`passed`
+- Reviewer：Codex 实施自检与用户独立验收。
 - 审核发现：Event 写入前通过冻结 Schema；expected 与事件 sequence 在锁内原子校验；ID 全局唯一；Run 内 Workflow 身份固定；失败不改变任一索引；存取均隔离深拷贝；Factory 无隐藏时间或随机性。
 - 必须返工：无已知项。内存实现不持久化且进程重启后丢失，这是本任务设计边界，SQLite 留待 `M1-SQLITE-001`。
 - 证据：7 路径 Diff、保护目录零改动、15 个目标测试、Ruff、strict mypy、13 个 contract tests、53 个全量 tests。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、原子性/负例、测试和自检证据齐全；最终验收必须由用户独立给出。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、Diff、原子性/负例、测试、自检和用户独立验收证据齐全。
 - 重试计数和上限：0/3。
 - 人工升级条件：需要修改冻结契约、越过批准路径，或第三次出现相同归一化失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：`pending`
-- 遗留问题：用户验收、任务 commit、推送和 hosted CI 尚未完成。
-- 后续任务：验收后才可单独批准 `M1-PROJECTION-001`。
+- 证据：15 个目标测试、Ruff、strict mypy、13 个 contract tests、53 个全量 tests，以及用户明确验收。
+- 遗留问题：提交推送后的 hosted CI 结果仍需观察，不阻塞已批准的下一项本地实施。
+- 后续任务：用户已批准继续 `M1-PROJECTION-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`6d88e3666c2e8c90aee05898155a70081f261387`
-- 最终 Commit：`pending`
-- Commit 主题：`pending`
+- 最终 Commit：`8e3c30f8336b2e5157c7eda22c09160539e9935c`
+- Commit 主题：`feat(events): add append-only event store`
 - 修改文件：7 个批准路径，详见第 9 节
-- 远端状态：`not_pushed`
+- 远端状态：`pending_push`
 
 ## 16. 后续任务
 
-- 本任务验收后建议 `M1-PROJECTION-001`；不得在本任务中提前实现投影。
+- 创建 `M1-PROJECTION-001` 任务卡；不得在该任务内提前实现执行器、节点处理器或 SQLite。
 
 ## 17. 最终摘要
 
-已实现追加式 EventStore Protocol、离线 Schema 门禁、线程安全内存实现、稳定冲突错误、深拷贝事实隔离和注入式 EventFactory。15 个目标测试、Ruff、strict mypy、13 个 contract tests 和 53 个全量 tests 均通过；保护目录零改动，任务等待用户验收且未创建本任务 commit。
+已实现追加式 EventStore Protocol、离线 Schema 门禁、线程安全内存实现、稳定冲突错误、深拷贝事实隔离和注入式 EventFactory。15 个目标测试、Ruff、strict mypy、13 个 contract tests 和 53 个全量 tests 均通过；保护目录零改动，用户已验收，实施提交为 `8e3c30f`。
