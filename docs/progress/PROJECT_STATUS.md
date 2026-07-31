@@ -1,19 +1,19 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 21:03 +08:00
+- Last updated: 2026-07-31 21:08 +08:00
 - Current milestone: M1 — no-GUI Workflow core
 - Milestone verdict: M0 accepted; M1 architecture semantics accepted
-- Current task: `M1-ERROR-001`
-- Current task status: `acceptance_pending`
+- Current task: `M1-RETRY-001`
+- Current task status: `approved_not_started`
 - Branch: `main`
-- Latest recorded implementation commit: `089098966fc5b64ee11d30e09497801d8c484620`
-- Remote tracking: local `main` matches `origin/main` at `0e8c6b7`
+- Latest recorded implementation commit: `cfa721de276234424357b34c3cbf2e5f49a69a58`
+- Remote tracking: local `main` is ahead of `origin/main`; M1 error-routing commits are pending push
 
 ## In progress
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M1-ERROR-001` | Implement structured error routing and output gate integration | `acceptance_pending` | Acceptor (user) |
+| `M1-RETRY-001` | Implement finite retry traversal, deterministic delay, and budget guards | `approved_not_started` | Planner |
 
 ## Completed
 
@@ -31,10 +31,11 @@
 | `M1-PROJECTION-001` | Implement pure Run projection and deterministic Event replay | `cf22b57`, user acceptance on 2026-07-31 |
 | `M1-NODE-001` | Implement deterministic bindings, safe expressions, and pure node handlers | `e3405c1`, user acceptance on 2026-07-31 |
 | `M1-EXEC-001` | Implement deterministic sequence/conditional execution with bounded budgets | `0890989`, user acceptance on 2026-07-31 |
+| `M1-ERROR-001` | Implement structured error normalization, redaction, and deterministic error routing | `cfa721d`, user acceptance on 2026-07-31 |
 
 ## Blockers
 
-- No unresolved implementation blocker is known for `M1-ERROR-001`; user acceptance is pending.
+- No unresolved implementation blocker is known for `M1-RETRY-001`.
 
 ## Risks
 
@@ -44,6 +45,6 @@
 
 ## Next task
 
-1. Obtain independent user acceptance for `M1-ERROR-001`.
-2. After acceptance, create and push the task implementation and closure commits.
-3. Start `M1-RETRY-001` only after explicit user approval.
+1. Push the accepted M1 error-routing implementation and closure commits.
+2. Create the bounded `M1-RETRY-001` task card from frozen retry semantics.
+3. Implement and independently validate finite retry without adding resume or SQLite.
