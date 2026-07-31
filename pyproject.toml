@@ -36,6 +36,7 @@ include = ["oralflow*"]
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+pythonpath = ["backend"]
 addopts = "-ra --strict-config --strict-markers"
 
 [tool.ruff]

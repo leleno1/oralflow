@@ -1,0 +1,20 @@
+{
+  "schema_version": "0.1.0",
+  "event_id": "event_node_001",
+  "sequence": 1,
+  "run_id": "run_minimal_001",
+  "workflow_id": "wf_minimal_contract",
+  "workflow_revision": "rev_001",
+  "node_id": "mock_review",
+  "role_id": "mock_reviewer",
+  "type": "NODE_SUCCEEDED",
+  "timestamp": "2026-07-31T16:00:00+08:00",
+  "correlation_id": "correlation_001",
+  "payload": {
+    "artifact_refs": [
+      "artifact://review_report.json"
+    ],
+    "duration_seconds": 1.25,
+    "attempt": 1
+  }
+}

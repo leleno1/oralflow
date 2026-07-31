@@ -1,0 +1,144 @@
+[
+  {
+    "name": "missing_schema_version",
+    "operations": [
+      {
+        "op": "remove",
+        "path": [
+          "schema_version"
+        ]
+      }
+    ],
+    "expected_code": "SCHEMA_VALIDATION_FAILED"
+  },
+  {
+    "name": "unknown_role_reference",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "nodes",
+          1,
+          "role_id"
+        ],
+        "value": "missing_role"
+      }
+    ],
+    "expected_code": "ROLE_REFERENCE_UNKNOWN"
+  },
+  {
+    "name": "duplicate_node_id",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "nodes",
+          1,
+          "id"
+        ],
+        "value": "request_input"
+      }
+    ],
+    "expected_code": "NODE_ID_DUPLICATE"
+  },
+  {
+    "name": "cycle_without_retry_edge",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "edges",
+          3,
+          "kind"
+        ],
+        "value": "sequence"
+      },
+      {
+        "op": "remove",
+        "path": [
+          "edges",
+          3,
+          "retry"
+        ]
+      }
+    ],
+    "expected_code": "WORKFLOW_CYCLE_UNBOUNDED"
+  },
+  {
+    "name": "retry_without_maximum",
+    "operations": [
+      {
+        "op": "remove",
+        "path": [
+          "edges",
+          3,
+          "retry",
+          "max_traversals"
+        ]
+      }
+    ],
+    "expected_code": "SCHEMA_VALIDATION_FAILED"
+  },
+  {
+    "name": "subworkflow_depth_above_policy",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "nodes",
+          3,
+          "budget",
+          "max_depth"
+        ],
+        "value": 4
+      }
+    ],
+    "expected_code": "SUBWORKFLOW_NODE_DEPTH_EXCEEDS_POLICY"
+  },
+  {
+    "name": "unknown_subworkflow",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "nodes",
+          3,
+          "workflow_ref",
+          "workflow_id"
+        ],
+        "value": "wf_missing_child"
+      }
+    ],
+    "expected_code": "SUBWORKFLOW_REFERENCE_UNKNOWN"
+  },
+  {
+    "name": "subworkflow_ancestor_cycle",
+    "operations": [
+      {
+        "op": "set",
+        "path": [
+          "nodes",
+          3,
+          "workflow_ref",
+          "workflow_id"
+        ],
+        "value": "wf_minimal_contract"
+      }
+    ],
+    "expected_code": "SUBWORKFLOW_ANCESTOR_CYCLE"
+  },
+  {
+    "name": "agent_role_has_no_output_schema",
+    "operations": [
+      {
+        "op": "remove",
+        "path": [
+          "roles",
+          0,
+          "output_schema"
+        ]
+      }
+    ],
+    "expected_code": "SCHEMA_VALIDATION_FAILED"
+  }
+]

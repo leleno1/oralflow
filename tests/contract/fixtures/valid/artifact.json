@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_id": "artifact_review_report",
+  "uri": "artifact://review_report.json",
+  "media_type": "application/json",
+  "schema_ref": "urn:oralflow:schema:role:0.1.0",
+  "digest": {
+    "algorithm": "sha256",
+    "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "producer": {
+    "run_id": "run_minimal_001",
+    "node_id": "mock_review",
+    "role_id": "mock_reviewer",
+    "event_id": "event_artifact_001"
+  },
+  "size_bytes": 128,
+  "created_at": "2026-07-31T16:00:00+08:00",
+  "metadata": {
+    "labels": {
+      "fixture": "valid"
+    }
+  }
+}
