@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oralflow:schema:artifact:0.1.0",
+  "title": "OralFlow Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "uri",
+    "media_type",
+    "digest",
+    "producer",
+    "created_at",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "artifact_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "uri": {
+      "type": "string",
+      "pattern": "^artifact://[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "media_type": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+    },
+    "schema_ref": {
+      "type": "string",
+      "format": "uri"
+    },
+    "digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "producer": {
+      "$ref": "#/$defs/producer"
+    },
+    "size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "node_id"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "node_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "role_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "event_id": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

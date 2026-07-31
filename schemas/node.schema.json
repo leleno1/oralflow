@@ -1,0 +1,587 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oralflow:schema:node:0.1.0",
+  "title": "OralFlow Node",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "kind",
+    "name",
+    "inputs",
+    "config",
+    "outputs",
+    "error_contract",
+    "execution_policy",
+    "permissions",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "kind": {
+      "enum": [
+        "input",
+        "agent_task",
+        "code_task",
+        "command",
+        "transform",
+        "gate",
+        "human_approval",
+        "subworkflow",
+        "artifact",
+        "terminal"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "role_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "workflow_ref": {
+      "$ref": "#/$defs/workflowRef"
+    },
+    "condition": {
+      "$ref": "#/$defs/condition"
+    },
+    "command_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "source": {
+      "enum": [
+        "user",
+        "file",
+        "system"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "success",
+        "failure",
+        "cancelled"
+      ]
+    },
+    "artifact_policy": {
+      "$ref": "#/$defs/artifactPolicy"
+    },
+    "inputs": {
+      "$ref": "#/$defs/inputContract"
+    },
+    "config": {
+      "$ref": "#/$defs/configContract"
+    },
+    "outputs": {
+      "$ref": "#/$defs/outputContract"
+    },
+    "error_contract": {
+      "$ref": "#/$defs/errorContract"
+    },
+    "execution_policy": {
+      "$ref": "#/$defs/executionPolicy"
+    },
+    "permissions": {
+      "$ref": "#/$defs/nodePermissions"
+    },
+    "context_policy": {
+      "$ref": "#/$defs/subworkflowContextPolicy"
+    },
+    "budget": {
+      "$ref": "#/$defs/subworkflowBudget"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "agent_task"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "role_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "subworkflow"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "workflow_ref",
+          "context_policy",
+          "budget"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "terminal"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "outcome"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "gate"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "condition"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "command"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "command_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "input"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "source"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "artifact"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "artifact_policy"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "pattern": "^(workflow-input|node-output|artifact|file)://.+$"
+        }
+      }
+    },
+    "inputContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bindings",
+        "schema"
+      ],
+      "properties": {
+        "bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/reference"
+              },
+              {
+                "type": [
+                  "string",
+                  "number",
+                  "integer",
+                  "boolean",
+                  "array",
+                  "null"
+                ]
+              },
+              {
+                "type": "object",
+                "not": {
+                  "required": [
+                    "ref"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "schema": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "configContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "values",
+        "schema"
+      ],
+      "properties": {
+        "values": {
+          "type": "object"
+        },
+        "schema": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "outputContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destinations",
+        "schema"
+      ],
+      "properties": {
+        "destinations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^(artifact|node-output)://.+$"
+          }
+        },
+        "schema": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "errorContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_codes",
+        "allowed_categories",
+        "retryable_codes",
+        "schema"
+      ],
+      "properties": {
+        "allowed_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "uniqueItems": true
+        },
+        "allowed_categories": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "validation",
+              "permission",
+              "timeout",
+              "tool",
+              "provider",
+              "budget",
+              "cancelled",
+              "internal"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "retryable_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "uniqueItems": true
+        },
+        "schema": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "executionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_seconds",
+        "max_attempts",
+        "exit_conditions",
+        "escalation_condition"
+      ],
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "exit_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "uniqueItems": true
+        },
+        "escalation_condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "nodePermissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "write_paths",
+        "command_classes",
+        "network"
+      ],
+      "properties": {
+        "write_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true
+        },
+        "command_classes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "safe",
+              "review_required",
+              "dangerous"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "network": {
+          "type": "boolean"
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "expression"
+      ],
+      "properties": {
+        "language": {
+          "const": "oralflow-expression-0.1"
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "workflowRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_id",
+        "version"
+      ],
+      "properties": {
+        "workflow_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "subworkflowContextPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isolation",
+        "return_mode",
+        "input_mapping",
+        "output_mapping"
+      ],
+      "properties": {
+        "isolation": {
+          "const": "separate"
+        },
+        "return_mode": {
+          "const": "summary_and_artifacts"
+        },
+        "input_mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "output_mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "subworkflowBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_depth",
+        "max_children",
+        "max_duration_seconds",
+        "max_attempts"
+      ],
+      "properties": {
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "max_children": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "max_duration_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      }
+    },
+    "artifactPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "media_type",
+        "digest",
+        "retention"
+      ],
+      "properties": {
+        "media_type": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+$"
+        },
+        "digest": {
+          "const": "sha256"
+        },
+        "retention": {
+          "enum": [
+            "run",
+            "project",
+            "manual"
+          ]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "extensions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

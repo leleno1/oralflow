@@ -1,0 +1,494 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oralflow:schema:workflow:0.1.0",
+  "title": "OralFlow Workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "workflow_version",
+    "revision",
+    "name",
+    "goal",
+    "status",
+    "inputs",
+    "roles",
+    "nodes",
+    "edges",
+    "policies",
+    "success_criteria",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "workflow_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "workflow_version": {
+      "$ref": "#/$defs/semanticVersion"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "deprecated"
+      ]
+    },
+    "inputs": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:oralflow:schema:role:0.1.0"
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "urn:oralflow:schema:node:0.1.0"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
+    },
+    "policies": {
+      "$ref": "#/$defs/workflowPolicies"
+    },
+    "success_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/successCriterion"
+      }
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "semanticVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "port"
+      ],
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "port": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "from",
+        "to"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "enum": [
+            "sequence",
+            "conditional",
+            "retry",
+            "error",
+            "subworkflow"
+          ]
+        },
+        "from": {
+          "$ref": "#/$defs/endpoint"
+        },
+        "to": {
+          "$ref": "#/$defs/endpoint"
+        },
+        "condition": {
+          "$ref": "#/$defs/edgeCondition"
+        },
+        "retry": {
+          "$ref": "#/$defs/retryPolicy"
+        },
+        "match": {
+          "$ref": "#/$defs/errorMatch"
+        },
+        "on_status": {
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled",
+            "escalated"
+          ]
+        },
+        "result_mapping": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "conditional"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "condition"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "retry"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "retry"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "error"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "match"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "subworkflow"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "on_status",
+              "result_mapping"
+            ]
+          }
+        }
+      ]
+    },
+    "edgeCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "expression",
+        "case"
+      ],
+      "properties": {
+        "language": {
+          "const": "oralflow-expression-0.1"
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "case": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "retryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_traversals",
+        "backoff",
+        "on_exhausted"
+      ],
+      "properties": {
+        "max_traversals": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "backoff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "strategy",
+            "initial_seconds",
+            "max_seconds"
+          ],
+          "properties": {
+            "strategy": {
+              "enum": [
+                "none",
+                "fixed",
+                "exponential"
+              ]
+            },
+            "initial_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            },
+            "max_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        "on_exhausted": {
+          "enum": [
+            "fail",
+            "replan",
+            "stop",
+            "escalate"
+          ]
+        }
+      }
+    },
+    "errorMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "codes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "uniqueItems": true
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "validation",
+              "permission",
+              "timeout",
+              "tool",
+              "provider",
+              "budget",
+              "cancelled",
+              "internal"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "codes"
+          ]
+        },
+        {
+          "required": [
+            "categories"
+          ]
+        }
+      ]
+    },
+    "workflowPolicies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_total_transitions",
+        "max_duration_seconds",
+        "max_failures",
+        "max_replans",
+        "max_children",
+        "max_subworkflow_depth",
+        "human_escalation_condition"
+      ],
+      "properties": {
+        "max_total_transitions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "max_duration_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 604800
+        },
+        "max_failures": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_replans": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "max_children": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "max_subworkflow_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "human_escalation_condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "successCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "verification": {
+          "enum": [
+            "automatic",
+            "human"
+          ]
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "verification": {
+                "const": "automatic"
+              }
+            },
+            "required": [
+              "verification"
+            ]
+          },
+          "then": {
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "extensions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

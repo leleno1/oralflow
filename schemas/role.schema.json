@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oralflow:schema:role:0.1.0",
+  "title": "OralFlow Role",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "role_id",
+    "role_type",
+    "skill_ref",
+    "model_profile",
+    "personality_profile",
+    "backend_profile",
+    "context_policy",
+    "permission_policy",
+    "input_artifact_types",
+    "output_schema",
+    "timeout_seconds",
+    "max_attempts",
+    "escalation_policy",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "role_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "role_type": {
+      "enum": [
+        "intent",
+        "planner",
+        "plan_critic",
+        "implementer",
+        "observer",
+        "reviewer",
+        "acceptance",
+        "supervisor"
+      ]
+    },
+    "skill_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "model_profile": {
+      "$ref": "#/$defs/identifier"
+    },
+    "personality_profile": {
+      "$ref": "#/$defs/identifier"
+    },
+    "backend_profile": {
+      "$ref": "#/$defs/identifier"
+    },
+    "context_policy": {
+      "$ref": "#/$defs/contextPolicy"
+    },
+    "permission_policy": {
+      "$ref": "#/$defs/permissionPolicy"
+    },
+    "input_artifact_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "uniqueItems": true
+    },
+    "output_schema": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 86400
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "escalation_policy": {
+      "$ref": "#/$defs/escalationPolicy"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "role_type": {
+            "const": "observer"
+          }
+        },
+        "required": [
+          "role_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permission_policy": {
+            "properties": {
+              "filesystem": {
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "none",
+                      "read"
+                    ]
+                  }
+                }
+              },
+              "routing_control": {
+                "const": false
+              },
+              "code_write": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "role_type": {
+            "const": "supervisor"
+          }
+        },
+        "required": [
+          "role_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permission_policy": {
+            "properties": {
+              "code_write": {
+                "const": false
+              },
+              "business_artifact_write": {
+                "const": false
+              },
+              "routing_control": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "role_type": {
+            "enum": [
+              "intent",
+              "planner",
+              "plan_critic",
+              "observer",
+              "reviewer",
+              "supervisor"
+            ]
+          }
+        },
+        "required": [
+          "role_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permission_policy": {
+            "properties": {
+              "code_write": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "contextPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isolation",
+        "allowed_paths",
+        "artifact_types",
+        "history_mode",
+        "return_mode"
+      ],
+      "properties": {
+        "isolation": {
+          "enum": [
+            "separate",
+            "shared_readonly"
+          ]
+        },
+        "allowed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true
+        },
+        "artifact_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "history_mode": {
+          "enum": [
+            "none",
+            "summary",
+            "declared_artifacts"
+          ]
+        },
+        "return_mode": {
+          "enum": [
+            "summary",
+            "summary_and_artifacts"
+          ]
+        }
+      }
+    },
+    "permissionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filesystem",
+        "tools",
+        "network",
+        "command_classes",
+        "routing_control",
+        "code_write",
+        "business_artifact_write"
+      ],
+      "properties": {
+        "filesystem": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "allowed_paths"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "none",
+                "read",
+                "write_scoped"
+              ]
+            },
+            "allowed_paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/identifier"
+          },
+          "uniqueItems": true
+        },
+        "network": {
+          "type": "boolean"
+        },
+        "command_classes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "safe",
+              "review_required",
+              "dangerous"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "routing_control": {
+          "type": "boolean"
+        },
+        "code_write": {
+          "type": "boolean"
+        },
+        "business_artifact_write": {
+          "type": "boolean"
+        }
+      }
+    },
+    "escalationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "target"
+      ],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "target": {
+          "enum": [
+            "supervisor",
+            "human"
+          ]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "extensions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

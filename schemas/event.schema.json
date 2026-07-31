@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oralflow:schema:event:0.1.0",
+  "title": "OralFlow Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "sequence",
+    "run_id",
+    "workflow_id",
+    "workflow_revision",
+    "type",
+    "timestamp",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "event_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "run_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "workflow_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "workflow_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "node_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "role_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "type": {
+      "enum": [
+        "WORKFLOW_VALIDATION_STARTED",
+        "WORKFLOW_VALIDATION_COMPLETED",
+        "WORKFLOW_VALIDATION_FAILED",
+        "RUN_STARTED",
+        "RUN_PAUSED",
+        "RUN_RESUMED",
+        "RUN_COMPLETED",
+        "RUN_FAILED",
+        "RUN_CANCELLED",
+        "NODE_QUEUED",
+        "NODE_STARTED",
+        "NODE_INPUT_VALIDATED",
+        "NODE_INPUT_REJECTED",
+        "NODE_OUTPUT_VALIDATED",
+        "NODE_OUTPUT_REJECTED",
+        "NODE_SUCCEEDED",
+        "NODE_FAILED",
+        "NODE_SKIPPED",
+        "NODE_CANCELLED",
+        "NODE_WAITING_APPROVAL",
+        "ROLE_STARTED",
+        "ROLE_OUTPUT_ACCEPTED",
+        "ROLE_OUTPUT_REJECTED",
+        "ROLE_COMPLETED",
+        "ROLE_FAILED",
+        "HUMAN_APPROVAL_REQUESTED",
+        "HUMAN_APPROVAL_RESOLVED",
+        "SUPERVISOR_DECISION",
+        "ARTIFACT_CREATED",
+        "OBSERVATION_RECORDED"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "causation_event_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "correlation_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "payload": {
+      "$ref": "#/$defs/payload"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "NODE_QUEUED",
+              "NODE_STARTED",
+              "NODE_INPUT_VALIDATED",
+              "NODE_INPUT_REJECTED",
+              "NODE_OUTPUT_VALIDATED",
+              "NODE_OUTPUT_REJECTED",
+              "NODE_SUCCEEDED",
+              "NODE_FAILED",
+              "NODE_SKIPPED",
+              "NODE_CANCELLED",
+              "NODE_WAITING_APPROVAL"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "required": [
+          "node_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "ROLE_STARTED",
+              "ROLE_OUTPUT_ACCEPTED",
+              "ROLE_OUTPUT_REJECTED",
+              "ROLE_COMPLETED",
+              "ROLE_FAILED",
+              "OBSERVATION_RECORDED"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "required": [
+          "role_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "SUPERVISOR_DECISION"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "required": [
+          "role_id"
+        ],
+        "properties": {
+          "payload": {
+            "required": [
+              "decision",
+              "reason"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "category",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "category": {
+          "enum": [
+            "validation",
+            "permission",
+            "timeout",
+            "tool",
+            "provider",
+            "budget",
+            "cancelled",
+            "internal"
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^artifact://[A-Za-z0-9][A-Za-z0-9._/-]*$"
+          },
+          "uniqueItems": true
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/$defs/error"
+        },
+        "decision": {
+          "enum": [
+            "CONTINUE",
+            "RETRY",
+            "REPLAN",
+            "ROLLBACK",
+            "ESCALATE",
+            "STOP",
+            "ACCEPT"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true
+        },
+        "remaining_budget": {
+          "type": "object"
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
