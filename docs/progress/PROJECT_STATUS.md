@@ -1,19 +1,19 @@
 # OralFlow Project Status
 
-- Last updated: 2026-07-31 18:19 +08:00
-- Current milestone: M1 planning — no-GUI Workflow core
-- Milestone verdict: M0 accepted; M1 implementation has not started
-- Current task: `M1-ARCH-001`
-- Current task status: `acceptance_pending`
+- Last updated: 2026-07-31 18:27 +08:00
+- Current milestone: M1 — no-GUI Workflow core
+- Milestone verdict: M0 accepted; M1 architecture semantics accepted
+- Current task: `M1-DOMAIN-001` (approved, task card pending creation)
+- Current task status: `approved`
 - Branch: `main`
-- Latest recorded implementation commit: `ec2fe30ffdbad82a8cf71a50bfe4c60ed8acd587`
-- Remote tracking: `origin/main` synchronized at `71d8da2`; `M0 Quality Gate #2` passed
+- Latest recorded implementation commit: `993acf452fe55a758893c8754844192869dce495`
+- Remote tracking: local `main` is ahead of `origin/main`; M1 architecture commits are pending push
 
 ## In progress
 
 | Task | Description | Status | Owner role |
 |---|---|---|---|
-| `M1-ARCH-001` | Freeze deterministic M1 Runtime semantics and activate M1 repository boundaries | `acceptance_pending` | Acceptor (user) |
+| `M1-DOMAIN-001` | Implement strict Run/Event domain models and deterministic Workflow digest | `approved` | Developer |
 
 ## Completed
 
@@ -25,11 +25,11 @@
 | `M0-RECORD-001` | Establish and validate the Development Harness Ledger | `ec2fe30`, user acceptance on 2026-07-31 |
 | M0 ledger hosted acceptance | Run the closed ledger state on hosted Windows CI | `M0 Quality Gate #2`, head `71d8da2` |
 | `M1-PLAN-001` | Plan the no-GUI Workflow core as 12 bounded loops | `8a23019`, user approval on 2026-07-31 |
+| `M1-ARCH-001` | Freeze deterministic M1 Runtime semantics and activate M1 repository boundaries | `993acf4`, user acceptance on 2026-07-31 |
 
 ## Blockers
 
-- No unresolved implementation blocker is known for `M1-ARCH-001`.
-- Runtime source implementation remains blocked until the user accepts the M1 semantics and repository boundaries.
+- No unresolved implementation blocker is known for `M1-DOMAIN-001`.
 
 ## Risks
 
@@ -39,6 +39,6 @@
 
 ## Next task
 
-1. Obtain user acceptance for `M1-ARCH-001`.
-2. Record and push the accepted documentation commit.
-3. Start `M1-DOMAIN-001` only after a separate approval.
+1. Record and push the accepted `M1-ARCH-001` documentation commits.
+2. Create the `M1-DOMAIN-001` task card before source changes.
+3. Implement and independently validate the frozen Run/Event contracts and Workflow digest.

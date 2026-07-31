@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 18:13 +08:00
-- 更新时间：2026-07-31 18:19 +08:00
+- 更新时间：2026-07-31 18:27 +08:00
 - Git 分支：`main`
 - 基线 Commit：`8a230198eba43cea04fc08bd2021e34628e64e62`
-- 最终 Commit：`pending`
+- 最终 Commit：`993acf452fe55a758893c8754844192869dce495`
 
 ## 2. 原始需求
 
@@ -131,7 +131,7 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
+- 结论：`passed`
 - Reviewer：Codex 实施自检；最终由用户独立复核。
 - 审核发现：支持矩阵、状态转换、边选择、retry exhaustion、pause/resume、EventStore 和 replay 均有唯一规则；Schema 零变化；未混入 M2+ 源码。
 - 必须返工：无已知项。若用户不同意 `payload.details.runtime` 或 path-only 表达式，需要在编码前修订 ADR。
@@ -139,31 +139,31 @@
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
+- 决策：`ACCEPT`
 - 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、失败/返工和测试证据完整；用户验收前禁止开始 Runtime 源码。
+- 原因：计划、Diff、失败/返工和测试证据完整，用户已明确验收通过并授权创建 commit。
 - 重试计数和上限：环境级测试编排返工 1/3；文档明确性返工 1/3。
 - 人工升级条件：需要 Schema 迁移、无法消除语义歧义或第三次相同验证失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
 - 证据：Runtime 语义、ADR、AGENTS Diff、Schema 零变化、示例和 pytest 结果。
-- 遗留问题：用户验收、任务 commit 和远端 CI 尚未完成。
-- 后续任务：验收后推荐 `M1-DOMAIN-001`。
+- 遗留问题：提交推送后的远端 CI 结果仍需观察，不阻塞已批准的下一项本地实施。
+- 后续任务：用户已批准继续 `M1-DOMAIN-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`8a230198eba43cea04fc08bd2021e34628e64e62`
-- 最终 Commit：`pending`
-- 远端状态：`not_pushed`
+- 最终 Commit：`993acf452fe55a758893c8754844192869dce495`
+- 远端状态：`pending_push`
 
 ## 16. 后续任务
 
-- 用户验收后，单独批准 `M1-DOMAIN-001`。
+- 创建 `M1-DOMAIN-001` 任务卡，实施严格 Run/Event 领域模型与 Workflow digest。
 
 ## 17. 最终摘要
 
-已冻结 M1 支持矩阵、状态机、事件细节、受限表达式、边选择、重试、暂停恢复、投影和存储语义，并通过 ADR 记录设计取舍。根级和后端约束已切换到受限 M1 范围。Schema、Runtime 源码、测试、示例和依赖未修改；任务等待用户验收。
+已冻结 M1 支持矩阵、状态机、事件细节、受限表达式、边选择、重试、暂停恢复、投影和存储语义，并通过 ADR 记录设计取舍。根级和后端约束已切换到受限 M1 范围。Schema、Runtime 源码、测试、示例和依赖未修改；用户已验收，实施提交为 `993acf4`。
