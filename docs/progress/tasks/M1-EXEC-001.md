@@ -2,14 +2,14 @@
 
 ## 1. 任务状态
 
-- 状态：`acceptance_pending`
-- 当前角色：`acceptor`
+- 状态：`completed`
+- 当前角色：`supervisor`
 - 所属里程碑：M1
 - 创建时间：2026-07-31 20:31 +08:00
-- 更新时间：2026-07-31 20:44 +08:00
+- 更新时间：2026-07-31 20:51 +08:00
 - Git 分支：`main`
 - 基线 Commit：`a58832b483240ee5cc001a4a446cc017f78ec4a6`
-- 最终 Commit：`pending`
+- 最终 Commit：`089098966fc5b64ee11d30e09497801d8c484620`
 
 ## 2. 原始需求
 
@@ -87,6 +87,8 @@
 | 20:42 | Tester | 复跑目标 pytest、Ruff 和 strict mypy | 最终窄门禁 | 全部通过 |
 | 20:43 | Tester | 运行示例、全量 Ruff、contract 和全量 pytest | 回归门禁 | 117 passed；全部通过 |
 | 20:44 | Tester | 检查批准路径、保护目录、JSONL 和 Git Diff | PowerShell/Git | 全部通过 |
+| 20:51 | Acceptor | 独立验收并授权提交及下一任务 | 用户明确指令 | 通过 |
+| 20:51 | Developer | 创建已验收实现提交 | `git commit` | `0890989` |
 
 ## 9. 文件变更
 
@@ -136,40 +138,40 @@
 
 ## 12. Reviewer 结论
 
-- 结论：`conditional`
-- Reviewer：Codex 实施自检，不替代用户独立验收。
+- 结论：`passed`
+- Reviewer：Codex 实施自检与用户独立验收。
 - 审核发现：Schema/静态/支持矩阵在 Node Event 前完成；边候选不按文件顺序消歧；预算在下游排队前检查；拟追加 Event 先通过 projector；EventStore conflict 无隐藏 retry；Workflow 和输入经深拷贝保持不变。
 - 必须返工：无已知项。当前 error edge、retry、resume 和 SQLite 显式拒绝或未暴露，符合任务隔离。
 - 证据：5 路径 Diff、保护目录零改动、14 个目标测试、Ruff、strict mypy、13 个 contract tests、117 个全量 tests。
 
 ## 13. Supervisor 结论
 
-- 决策：`ESCALATE`
-- 记录完整性：`complete_for_acceptance`
-- 原因：计划、Diff、事件时序、分支/预算负例、失败返工、回归和自检证据齐全；最终验收必须由用户独立给出。
+- 决策：`ACCEPT`
+- 记录完整性：`complete`
+- 原因：计划、Diff、事件时序、分支/预算负例、失败返工、回归、自检和用户独立验收证据齐全。
 - 重试计数和上限：环境 1/3、lint 1/3、typing 1/3。
 - 人工升级条件：冻结语义冲突、越界修改或同一问题第三次失败。
 
 ## 14. 验收结果
 
-- 结果：`pending`
+- 结果：`passed`
 - Acceptor：用户
-- 证据：14 个目标测试、Ruff、strict mypy、13 个 contract tests、117 个全量 tests，等待用户复核。
-- 遗留问题：用户验收、任务 commit、推送和 hosted CI 尚未完成。
-- 后续任务：验收后才可进入 `M1-ERROR-001`。
+- 证据：14 个目标测试、Ruff、strict mypy、13 个 contract tests、117 个全量 tests，以及用户明确验收。
+- 遗留问题：提交推送后的 hosted CI 结果仍需观察，不阻塞已批准的下一项本地实施。
+- 后续任务：用户已批准继续 `M1-ERROR-001`。
 
 ## 15. Git 信息
 
 - 分支：`main`
 - 基线 Commit：`a58832b483240ee5cc001a4a446cc017f78ec4a6`
-- 最终 Commit：`pending`
-- Commit 主题：`pending`
+- 最终 Commit：`089098966fc5b64ee11d30e09497801d8c484620`
+- Commit 主题：`feat(runtime): add deterministic workflow executor`
 - 远端状态：`not_pushed`
 
 ## 16. 后续任务
 
-- 本任务验收后建议 `M1-ERROR-001`；不得提前实现 error edge routing。
+- 创建 `M1-ERROR-001` 任务卡；错误路由必须独立验证且不得混入 retry 行为。
 
 ## 17. 最终摘要
 
-已实现同步确定性 sequence/conditional Engine，覆盖 Schema/静态/support preflight、追加式 Node/Run Events、精确边选择、transition/duration 预算、内联数据上限、EventStore conflict 和 live/replay 等价。14 个目标测试、Ruff、strict mypy、13 个 contract tests 和 117 个全量 tests 均通过；任务等待用户验收且未创建本任务 commit。
+已实现同步确定性 sequence/conditional Engine，覆盖 Schema/静态/support preflight、追加式 Node/Run Events、精确边选择、transition/duration 预算、内联数据上限、EventStore conflict 和 live/replay 等价。14 个目标测试、Ruff、strict mypy、13 个 contract tests 和 117 个全量 tests 均通过；用户已验收，实施提交为 `0890989`。
