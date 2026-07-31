@@ -16,4 +16,5 @@ dependencies:
       - "pytest-cov>=5.0,<8.0"
       - "referencing>=0.36,<1.0"
       - "ruff>=0.9,<1.0"
+      - "types-jsonschema>=4.23,<5.0"
       - "uvicorn>=0.34,<1.0"
